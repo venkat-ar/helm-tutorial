@@ -137,6 +137,8 @@ postgresql:
 --
 ====
 
+Notice that `global` prefix is not required.
+
 Save your work.
 
 === Assembling subcharts in `charts` folder
