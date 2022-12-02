@@ -73,9 +73,8 @@ Minikube::
 [.console-input]
 [source,bash,subs="attributes+,+macros"]
 ----
-helm install faq-db \
---set postgresqlUsername=faq-default,postgresqlPassword=postgres,postgresqlDatabase=faq,persistence.enabled=false \
-bitnami/postgresql
+helm install faq-db --set global.postgresql.auth.username=faq-default,global.postgresql.auth.password=postgres,global.postgresql.auth.database=faq,primary.persistence.enabled=false,\
+--version 12.1.2  bitnami/postgresql
 ----
 --	
 OpenShift::
@@ -84,9 +83,9 @@ OpenShift::
 [.console-input]
 [source,bash,subs="attributes+,+macros"]
 ----
-helm install faq-db --set postgresqlUsername=faq-default,postgresqlPassword=postgres,postgresqlDatabase=faq,persistence.enabled=false,\
-securityContext.enabled=false,containerSecurityContext.enabled=false \
-bitnami/postgresql
+helm install faq-db --set global.postgresql.auth.username=faq-default,global.postgresql.auth.password=postgres,global.postgresql.auth.database=faq,primary.persistence.enabled=false,\
+primary.podSecurityContext.enabled=false,primary.containerSecurityContext.enabled=false \
+--version 12.1.2  bitnami/postgresql
 --
 ====
 
@@ -109,7 +108,7 @@ You should see something similar to:
 [source,bash,subs="attributes+,+macros"]
 ----
 NAME  	NAMESPACE     	REVISION	UPDATED                              	STATUS  	CHART             	APP VERSION
-faq-db	dev	1       	2021-09-20 09:30:55.615499 +0200 CEST	deployed	postgresql-10.10.1	11.13.0  
+faq-db	dev	1       	2021-09-20 09:30:55.615499 +0200 CEST	deployed	            postgresql-12.1.2	15.1.0  
 ----
 
 If you wish to see information about the
@@ -127,25 +126,29 @@ The output will be verbose and similar to:
 [source,bash,subs="attributes+,+macros"]
 ----
 NAME: faq-db
-LAST DEPLOYED: Mon Sep 20 09:30:55 2021
-NAMESPACE: anasandbox-dev
+LAST DEPLOYED: Mon Nov 28 11:43:48 2022
+NAMESPACE: asotobue-dev
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 USER-SUPPLIED VALUES:
-containerSecurityContext:
-enabled: false
-persistence:
-enabled: false
-postgresqlDatabase: faq
-postgresqlPassword: postgres
-postgresqlUsername: faq-default
-securityContext:
-enabled: false
+global:
+  postgresql:
+    auth:
+      database: faq
+      password: postgres
+      username: faq-default
+primary:
+  containerSecurityContext:
+    enabled: false
+  persistence:
+    enabled: false
+  podSecurityContext:
+    enabled: false
 
 COMPUTED VALUES:
 .....
 ----
 
-IMPORTANT: You can uninstall a release, use the `helm uninstall` command.
+IMPORTANT: To uninstall a release, use the `helm uninstall` command. Don't do that yet as you'll need this PostgreSQL instance in the following section.
 

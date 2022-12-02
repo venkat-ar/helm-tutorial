@@ -208,3 +208,14 @@ helm install simple ./chart/faq --values ./chart/faq/values.qa.yaml <2>
 
 <1> Install the PostgreSQL Helm chart in the new namespace/project.
 <2> Install the faq Helm chart in the `qa` namespace using the values dedicated to this namespace.
+
+== Clean-Up
+
+Clean-Up the namespaceto have it prepared for the following section:
+
+[.console-input]
+[source,bash,subs="attributes+,+macros"]
+----
+helm uninstall simple
+helm uninstall faq-db
+----

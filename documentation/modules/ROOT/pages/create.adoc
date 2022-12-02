@@ -46,6 +46,71 @@ The above command generates the following structure for your chart:
 <6> The `NOTES.txt` can contain chart installation instructions that will be displayed to the users when running `helm install`.
 <7> `_helpers.tpl` is where you can put template helpers that you can re-use throughout the chart.
 
+== Modify the template associated with Deployment
+
+Navigate to `templates/deployment.yaml`.
+The keys associated to the values defined in `values.yaml` need to be employed in corresponding templates by using template directives.
+
+NOTE: A template directive is enclosed in `{{ and }}` blocks.
+
+
+Modify the Docker image section by adding a parametrizable container port:
+
+[.console-input]
+[source, yaml,subs="attributes+,+macros"]
+----
+image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+imagePullPolicy: {{ .Values.image.pullPolicy }}
+ports:
+  - name: http 
+    containerPort: {{ .Values.image.containerPort }}
+----
+
+Since the microservice is also using a PostgreSQL database, let's add its details:
+
+[.console-input]
+[source, yaml,subs="attributes+,+macros"]
+----
+env:
+  - name: POSTGRES_SERVER
+    value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }} # <1>
+  - name: POSTGRES_USERNAME
+    value: {{ .Values.postgresql.postgresqlUsername | default (printf "postgres" ) | quote }}
+  - name: POSTGRES_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
+        key: {{ .Values.postgresql.secretKey }} # <2>
+----
+<1> If the value for the PostgreSQL server is defined in `values.yaml`, that one will be filled in.
+ Else, a string composed from name of the release and ending with `postgresql` will be filled in.
+
+<2> Please note that the database password is not directly obtained from `values.yaml`, but referenced from the secret that contains the actual password.
+
+Last but not least, the health endpoints need to adapted in order to use the keys defined in `values.yaml`.
+Change the health and readiness using the following:
+
+[.console-input]
+[source, yaml, subs="normal,attributes"]
+----
+readinessProbe:
+  httpGet:
+    path: {{ .Values.readinessProbe.path}}
+    port: {{ .Values.service.port }}
+  initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds}}
+  timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds}}
+  periodSeconds: {{ .Values.readinessProbe.periodSeconds}}
+  failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+livenessProbe:
+  httpGet:
+    path: {{ .Values.livenessProbe.path}}
+    port: {{ .Values.service.port }}
+  initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds}}
+  timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds}}
+  periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+  failureThreshold: {{ .Values.livenessProbe.failureThreshold}}
+----
+
 == Customizing `values.yaml`
 
 Your `values.yaml` is the place where you can specify values for different parameters used across templates.
@@ -71,7 +136,7 @@ postgresql:
   server: faq-db-postgresql
   postgresqlUsername: faq-default
   secretName: faq-db-postgresql
-  secretKey: postgresql-password
+  secretKey: password
 ----
 
 Every well-designed application needs health checks and this why you should add the following:
@@ -108,72 +173,6 @@ service:
   port: 8080
 ----
 
-== Modify the template associated with Deployment
-
-Navigate to `templates/deployment.yaml`.
-The keys associated to the values defined in `values.yaml` need to be employed in corresponding templates by using template directives.
-
-NOTE: A template directive is enclosed in `{{ and }}` blocks.
-
-
-Modify the Docker image section by adding a parametrizable container port:
-
-[.console-input]
-[source, yaml,subs="attributes+,+macros"]
-----
-image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-imagePullPolicy: {{ .Values.image.pullPolicy }}
-ports:
-  - name: http 
-    containerPort: {{ .Values.image.containerPort }}
-----
-
-Since the microservice is also using a PostgreSQL database, let's add its details:
-
-[.console-input]
-[source, yaml,subs="attributes+,+macros"]
-----
-env:
-  - name: POSTGRES_SERVER
-    value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }} <1>
-  - name: POSTGRES_USERNAME
-    value: {{ .Values.postgresql.postgresqlUsername | default (printf "postgres" ) | quote }}
-  - name: POSTGRES_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
-        key: {{ .Values.postgresql.secretKey }} <2>
-----
-
-<1> If the value for the PostgreSQL server is defined in `values.yaml`, that one will be filled in.
- Else, a string composed from name of the release and ending with `postgresql` will be filled in.
-
-<2> Please note that the database password is not directly obtained from `values.yaml`, but referenced from the secret that contains the actual password.
-
-Last but not least, the health endpoints need to adapted in order to use the keys defined in `values.yaml`.
-Change the health and readiness using the following:
-
-[.console-input]
-[source, yaml, subs="normal,attributes"]
-----
-readinessProbe:
-  httpGet:
-    path: {{ .Values.readinessProbe.path}}
-    port: {{ .Values.service.port }}
-  initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds}}
-  timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds}}
-  periodSeconds: {{ .Values.readinessProbe.periodSeconds}}
-  failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-livenessProbe:
-  httpGet:
-    path: {{ .Values.livenessProbe.path}}
-    port: {{ .Values.service.port }}
-  initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds}}
-  timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds}}
-  periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-  failureThreshold: {{ .Values.livenessProbe.failureThreshold}}
-----
-
 == Deploy the modified charts
 
 Now simply install your charts using:
@@ -197,6 +196,21 @@ kubectl get svc/simple-faq <3>
 <1> Check if your installation was successful or not.
 <2> Get information about resources deployed.
 <3> Get the URL to access your application.
+
+When the application is deployed, you can access the service at `/ask` endpoint to get a question.
+The IP and port will depend on the platform you are using as Kubernetes cluster.
+
+[.console-input]
+[source, bash, subs="attributes+,+macros"]
+----
+curl http://35.237.137.84:8080/ask
+----
+
+[.console-output]
+[source, json, subs="attributes+,+macros"]
+----
+[{"title":"Existence","region":"BeNeLux","text":"Are you there?"},{"title":"Existence","region":"CEE","text":"Why do we dream?"}]
+----
 
 *Congratulations*, you can now see the frequently asked questions!
 

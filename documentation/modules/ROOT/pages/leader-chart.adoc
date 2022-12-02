@@ -12,8 +12,7 @@ You should be aware that this approach depends on the amount of charts for each 
 • tight coupling
 • less flexible local changes.
 
-**Goal of this section: deploy the microservice together with its database using Helm charts.
-**
+**Goal of this section: deploy the microservice together with its database using Helm charts.**
 
 == Leader Helm chart setup
 
@@ -48,59 +47,6 @@ leader
 
 Remove the `templates` folder under leader because in this approach we will not use it.
 
-=== Modify `values.yaml` file
-
-Go to the newly created charts and find the `values.yaml` file.
-You can use `vim` or your favorite IDE to edit its values.
-
-Delete everything from your `values.yaml` and just add the following:
-
-[tabs]
-====	
-Minikube::
-+
---
-[.console-input]
-[source, yaml, subs="attributes+,+macros"]
-----
-# Enabling postgres service, by default
-postgresql:
-  # Comment line below if db is deployed inside Kube
-  postgresqlDatabase: faq
-  postgresqlUsername: postgres
-  postgresqlPassword: postgres
-  secretName: leader-postgresql
-  server: leader-postgresql
-  persistence:
-    enabled: false
-----
---
-OpenShift::
-+
---
-[.console-input]
-[source, yaml, subs="attributes+,+macros"]
-----
-# Enabling postgres service, by default
-postgresql:
-  # Comment line below if db is deployed inside Kube
-  postgresqlDatabase: faq
-  postgresqlUsername: postgres
-  postgresqlPassword: postgres
-  secretName: leader-postgresql
-  server: leader-postgresql
-  securityContext:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
-  persistence:
-    enabled: false
-----
---
-====
-
-Save your work.
-
 === Modify `Chart.yaml`
 
 Because we will deploy both charts (faq and database), the `Chart.yaml` file
@@ -115,7 +61,7 @@ Go to `Chart.yaml` and add a new section regarding dependencies.
 # Each time you need a new dependency, add it in this area
 dependencies:
   - name: postgresql
-    version: 10.4.5
+    version: 12.1.2
     repository: "https://charts.bitnami.com/bitnami"
 ----
 
@@ -128,11 +74,76 @@ cd leader
 helm dependency update
 ----
 
+This command installs PostgreSQL Helm Chart package in the `charts` directory:
+
+[.console-input]
+[source,  bash, subs="attributes+,+macros"]
+----
+ls charts
+----
+
+[.console-output]
+[source,  bash, subs="attributes+,+macros"]
+----
+postgresql-12.1.2.tgz
+----
+
+=== Modify `values.yaml` file
+
+Go to the newly created charts and find the `values.yaml` file.
+You can use `vim` or your favorite IDE to edit its values.
+There you need to configure the PostgreSQL chart with the required parameters as we did in xref:basics.adoc[Basics] section.
+In that case, we set the parameters from command line, now we'll set them using the `values.yaml` file.
+
+Delete everything from your `values.yaml` and just add the following:
+
+[tabs]
+====	
+Minikube::
++
+--
+[.console-input]
+[source, yaml, subs="attributes+,+macros"]
+----
+postgresql:
+  auth:
+      username: faq-default
+      password: postgres
+      database: faq
+  primary:
+    persistence:
+      enabled: false
+----
+--
+OpenShift::
++
+--
+[.console-input]
+[source, yaml, subs="attributes+,+macros"]
+----
+postgresql:
+  auth:
+      username: faq-default
+      password: postgres
+      database: faq
+  primary:
+    podSecurityContext:
+      enabled: false
+    persistence:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
+----
+--
+====
+
+Save your work.
+
 === Assembling subcharts in `charts` folder
 
 If you went through chart per service setup you will reuse the chart created there.
 
-Copy the content of faq chart from to your `leader/charts_` folder.
+Copy the content of faq chart from to your `leader/charts` folder.
 The resulted leader folder should look like this:
 
 [.console-input]
@@ -159,16 +170,16 @@ leader
 └── values.yaml
 ----
 
-Go to `leader/charts/faq/values.yaml` and comment the details regarding PostgreSQL:
+Go to `leader/charts/faq/values.yaml` and update the PostgreSQL properties:
 
 [.console-input]
 [source, yaml, subs="attributes+,+macros"]
 ----
 postgresql:
-#  server: faq-db-postgresql
-#  postgresqlUsername: faq-default
-#  secretName: faq-db-postgresql
-  secretKey: postgresql-password
+  server: leader-postgresql
+  postgresqlUsername: faq-default
+  secretName: leader-postgresql
+  secretKey: password
 ----
 
 === Deploy the leader charts
