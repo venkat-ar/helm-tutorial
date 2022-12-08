@@ -7,7 +7,7 @@
     <link rel="canonical" href="https://redhat-scholars.github.io/course-template/helm-tutorial/create.html">
     <link rel="prev" href="basics.html">
     <link rel="next" href="chart-per-service.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
   <body class="article">
@@ -192,73 +192,6 @@ helm create faq</code></pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_customizing_values_yaml"><a class="anchor" href="#_customizing_values_yaml"></a>Customizing <code>values.yaml</code></h2>
-<div class="sectionbody">
-<div class="paragraph">
-<p>Your <code>values.yaml</code> is the place where you can specify values for different parameters used across templates.</p>
-</div>
-<div class="paragraph">
-<p>Modify the name of the values file with the image values with:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">image:
-  repository: quay.io/anasandbox/faq
-  tag: "1.0.1"
-  pullPolicy: IfNotPresent
-  containerPort: 8080</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Using the details from previous section when you installed the database, you can parameterize the connection to the database:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">postgresql:
-  server: faq-db-postgresql
-  postgresqlUsername: faq-default
-  secretName: faq-db-postgresql
-  secretKey: postgresql-password</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Every well-designed application needs health checks and this why you should add the following:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">readinessProbe:
-  path: /q/health/ready
-  initialDelaySeconds: 5
-  timeoutSeconds: 3
-  periodSeconds: 3
-  failureThreshold: 3
-
-
-livenessProbe:
-  path: /q/health/live
-  initialDelaySeconds: 10
-  timeoutSeconds: 2
-  periodSeconds: 8
-  failureThreshold: 3</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Your deployed application should be accessible from inside and outside the Kubernetes cluster.
-A Kubernetes Service of type <code>LoadBalancer</code> will be used for this installation.</p>
-</div>
-<div class="paragraph">
-<p>Please change the service values that will expose your microservice:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">service:
-  type: LoadBalancer
-  port: 8080</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect1">
 <h2 id="_modify_the_template_associated_with_deployment"><a class="anchor" href="#_modify_the_template_associated_with_deployment"></a>Modify the template associated with Deployment</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -346,6 +279,73 @@ livenessProbe:
 </div>
 </div>
 <div class="sect1">
+<h2 id="_customizing_values_yaml"><a class="anchor" href="#_customizing_values_yaml"></a>Customizing <code>values.yaml</code></h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Your <code>values.yaml</code> is the place where you can specify values for different parameters used across templates.</p>
+</div>
+<div class="paragraph">
+<p>Modify the name of the values file with the image values with:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">image:
+  repository: quay.io/anasandbox/faq
+  tag: "1.0.1"
+  pullPolicy: IfNotPresent
+  containerPort: 8080</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Using the details from previous section when you installed the database, you can parameterize the connection to the database:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">postgresql:
+  server: faq-db-postgresql
+  postgresqlUsername: faq-default
+  secretName: faq-db-postgresql
+  secretKey: password</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Every well-designed application needs health checks and this why you should add the following:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">readinessProbe:
+  path: /q/health/ready
+  initialDelaySeconds: 5
+  timeoutSeconds: 3
+  periodSeconds: 3
+  failureThreshold: 3
+
+
+livenessProbe:
+  path: /q/health/live
+  initialDelaySeconds: 10
+  timeoutSeconds: 2
+  periodSeconds: 8
+  failureThreshold: 3</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Your deployed application should be accessible from inside and outside the Kubernetes cluster.
+A Kubernetes Service of type <code>LoadBalancer</code> will be used for this installation.</p>
+</div>
+<div class="paragraph">
+<p>Please change the service values that will expose your microservice:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">service:
+  type: LoadBalancer
+  port: 8080</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
 <h2 id="_deploy_the_modified_charts"><a class="anchor" href="#_deploy_the_modified_charts"></a>Deploy the modified charts</h2>
 <div class="sectionbody">
 <div class="paragraph">
@@ -381,6 +381,20 @@ kubectl get svc/simple-faq <i class="conum" data-value="3"></i><b>(3)</b></code>
 <td>Get the URL to access your application.</td>
 </tr>
 </table>
+</div>
+<div class="paragraph">
+<p>When the application is deployed, you can access the service at <code>/ask</code> endpoint to get a question.
+The IP and port will depend on the platform you are using as Kubernetes cluster.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">curl <a href="http://35.237.137.84:8080/ask" class="bare">http://35.237.137.84:8080/ask</a></code></pre>
+</div>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-json hljs" data-lang="json">[{"title":"Existence","region":"BeNeLux","text":"Are you there?"},{"title":"Existence","region":"CEE","text":"Why do we dream?"}]</code></pre>
+</div>
 </div>
 <div class="paragraph">
 <p><strong>Congratulations</strong>, you can now see the frequently asked questions!</p>

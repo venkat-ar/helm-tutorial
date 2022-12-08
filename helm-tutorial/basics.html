@@ -7,7 +7,7 @@
     <link rel="canonical" href="https://redhat-scholars.github.io/course-template/helm-tutorial/basics.html">
     <link rel="prev" href="setup.html">
     <link rel="next" href="create.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
   <body class="article">
@@ -208,18 +208,17 @@ kubectl config set-context --current --namespace=dev</code></pre>
 <div class="tab-pane" aria-labelledby="tabset2_minikube">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db \
---set postgresqlUsername=faq-default,postgresqlPassword=postgres,postgresqlDatabase=faq,persistence.enabled=false \
-bitnami/postgresql</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db --set global.postgresql.auth.username=faq-default,global.postgresql.auth.password=postgres,global.postgresql.auth.database=faq,primary.persistence.enabled=false,\
+--version 12.1.2  bitnami/postgresql</code></pre>
 </div>
 </div>
 </div>
 <div class="tab-pane" aria-labelledby="tabset2_openshift">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db --set postgresqlUsername=faq-default,postgresqlPassword=postgres,postgresqlDatabase=faq,persistence.enabled=false,\
-securityContext.enabled=false,containerSecurityContext.enabled=false \
-bitnami/postgresql</code></pre>
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db --set global.postgresql.auth.username=faq-default,global.postgresql.auth.password=postgres,global.postgresql.auth.database=faq,primary.persistence.enabled=false,\
+primary.podSecurityContext.enabled=false,primary.containerSecurityContext.enabled=false \
+--version 12.1.2  bitnami/postgresql</code></pre>
 </div>
 </div>
 </div>
@@ -257,7 +256,7 @@ You can validate the installation via the <code>list</code> command to see the r
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">NAME  	NAMESPACE     	REVISION	UPDATED                              	STATUS  	CHART             	APP VERSION
-faq-db	dev	1       	2021-09-20 09:30:55.615499 +0200 CEST	deployed	postgresql-10.10.1	11.13.0</code></pre>
+faq-db	dev	1       	2021-09-20 09:30:55.615499 +0200 CEST	deployed	            postgresql-12.1.2	15.1.0</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -275,21 +274,25 @@ notes, hooks, supplied values, and generated manifest file of the given release,
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">NAME: faq-db
-LAST DEPLOYED: Mon Sep 20 09:30:55 2021
-NAMESPACE: anasandbox-dev
+LAST DEPLOYED: Mon Nov 28 11:43:48 2022
+NAMESPACE: asotobue-dev
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
 USER-SUPPLIED VALUES:
-containerSecurityContext:
-enabled: false
-persistence:
-enabled: false
-postgresqlDatabase: faq
-postgresqlPassword: postgres
-postgresqlUsername: faq-default
-securityContext:
-enabled: false
+global:
+  postgresql:
+    auth:
+      database: faq
+      password: postgres
+      username: faq-default
+primary:
+  containerSecurityContext:
+    enabled: false
+  persistence:
+    enabled: false
+  podSecurityContext:
+    enabled: false
 
 COMPUTED VALUES:
 .....</code></pre>
@@ -302,7 +305,7 @@ COMPUTED VALUES:
 <i class="fa icon-important" title="Important"></i>
 </td>
 <td class="content">
-You can uninstall a release, use the <code>helm uninstall</code> command.
+To uninstall a release, use the <code>helm uninstall</code> command. Don&#8217;t do that yet as you&#8217;ll need this PostgreSQL instance in the following section.
 </td>
 </tr>
 </table>

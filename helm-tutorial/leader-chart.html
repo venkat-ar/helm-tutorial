@@ -6,7 +6,7 @@
     <title>Leader chart</title>
     <link rel="canonical" href="https://redhat-scholars.github.io/course-template/helm-tutorial/leader-chart.html">
     <link rel="prev" href="chart-per-service.html">
-    <meta name="generator" content="Antora 2.3.4">
+    <meta name="generator" content="Antora 3.0.0">
     <link rel="stylesheet" href="../_/css/site.css">
   </head>
   <body class="article">
@@ -136,8 +136,7 @@
 </ul>
 </div>
 <div class="paragraph">
-<p><strong>Goal of this section: deploy the microservice together with its database using Helm charts.
-</strong></p>
+<p><strong>Goal of this section: deploy the microservice together with its database using Helm charts.</strong></p>
 </div>
 </div>
 </div>
@@ -177,10 +176,54 @@
 <p>Remove the <code>templates</code> folder under leader because in this approach we will not use it.</p>
 </div>
 <div class="sect2">
+<h3 id="_modify_chart_yaml"><a class="anchor" href="#_modify_chart_yaml"></a>Modify <code>Chart.yaml</code></h3>
+<div class="paragraph">
+<p>Because we will deploy both charts (faq and database), the <code>Chart.yaml</code> file
+needs to be modified and specify the database dependency there.</p>
+</div>
+<div class="paragraph">
+<p>Go to <code>Chart.yaml</code> and add a new section regarding dependencies.</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># These are the dependencies needed by the leader chart.
+# Each time you need a new dependency, add it in this area
+dependencies:
+  - name: postgresql
+    version: 12.1.2
+    repository: "https://charts.bitnami.com/bitnami"</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Save your work and run in the terminal the following command in order to update dependencies:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cd leader
+helm dependency update</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>This command installs PostgreSQL Helm Chart package in the <code>charts</code> directory:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">ls charts</code></pre>
+</div>
+</div>
+<div class="listingblock console-output">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">postgresql-12.1.2.tgz</code></pre>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_modify_values_yaml_file"><a class="anchor" href="#_modify_values_yaml_file"></a>Modify <code>values.yaml</code> file</h3>
 <div class="paragraph">
 <p>Go to the newly created charts and find the <code>values.yaml</code> file.
-You can use <code>vim</code> or your favorite IDE to edit its values.</p>
+You can use <code>vim</code> or your favorite IDE to edit its values.
+There you need to configure the PostgreSQL chart with the required parameters as we did in <a href="basics.html" class="xref page">Basics</a> section.
+In that case, we set the parameters from command line, now we&#8217;ll set them using the <code>values.yaml</code> file.</p>
 </div>
 <div class="paragraph">
 <p>Delete everything from your <code>values.yaml</code> and just add the following:</p>
@@ -200,72 +243,42 @@ You can use <code>vim</code> or your favorite IDE to edit its values.</p>
 <div class="tab-pane" aria-labelledby="tabset1_minikube">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># Enabling postgres service, by default
-postgresql:
-  # Comment line below if db is deployed inside Kube
-  postgresqlDatabase: faq
-  postgresqlUsername: postgres
-  postgresqlPassword: postgres
-  secretName: leader-postgresql
-  server: leader-postgresql
-  persistence:
-    enabled: false</code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">postgresql:
+  auth:
+      username: faq-default
+      password: postgres
+      database: faq
+  primary:
+    persistence:
+      enabled: false</code></pre>
 </div>
 </div>
 </div>
 <div class="tab-pane" aria-labelledby="tabset1_openshift">
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># Enabling postgres service, by default
-postgresql:
-  # Comment line below if db is deployed inside Kube
-  postgresqlDatabase: faq
-  postgresqlUsername: postgres
-  postgresqlPassword: postgres
-  secretName: leader-postgresql
-  server: leader-postgresql
-  securityContext:
-    enabled: false
-  containerSecurityContext:
-    enabled: false
-  persistence:
-    enabled: false</code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">postgresql:
+  auth:
+      username: faq-default
+      password: postgres
+      database: faq
+  primary:
+    podSecurityContext:
+      enabled: false
+    persistence:
+      enabled: false
+    containerSecurityContext:
+      enabled: false</code></pre>
 </div>
 </div>
 </div>
 </div>
+</div>
+<div class="paragraph">
+<p>Notice that <code>global</code> prefix is not required.</p>
 </div>
 <div class="paragraph">
 <p>Save your work.</p>
-</div>
-</div>
-<div class="sect2">
-<h3 id="_modify_chart_yaml"><a class="anchor" href="#_modify_chart_yaml"></a>Modify <code>Chart.yaml</code></h3>
-<div class="paragraph">
-<p>Because we will deploy both charts (faq and database), the <code>Chart.yaml</code> file
-needs to be modified and specify the database dependency there.</p>
-</div>
-<div class="paragraph">
-<p>Go to <code>Chart.yaml</code> and add a new section regarding dependencies.</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml"># These are the dependencies needed by the leader chart.
-# Each time you need a new dependency, add it in this area
-dependencies:
-  - name: postgresql
-    version: 10.4.5
-    repository: "https://charts.bitnami.com/bitnami"</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Save your work and run in the terminal the following command in order to update dependencies:</p>
-</div>
-<div class="listingblock console-input">
-<div class="content">
-<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">cd leader
-helm dependency update</code></pre>
-</div>
 </div>
 </div>
 <div class="sect2">
@@ -274,7 +287,7 @@ helm dependency update</code></pre>
 <p>If you went through chart per service setup you will reuse the chart created there.</p>
 </div>
 <div class="paragraph">
-<p>Copy the content of faq chart from to your <code>leader/charts_</code> folder.
+<p>Copy the content of faq chart from to your <code>leader/charts</code> folder.
 The resulted leader folder should look like this:</p>
 </div>
 <div class="listingblock console-input">
@@ -301,15 +314,15 @@ The resulted leader folder should look like this:</p>
 </div>
 </div>
 <div class="paragraph">
-<p>Go to <code>leader/charts/faq/values.yaml</code> and comment the details regarding PostgreSQL:</p>
+<p>Go to <code>leader/charts/faq/values.yaml</code> and update the PostgreSQL properties:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">postgresql:
-#  server: faq-db-postgresql
-#  postgresqlUsername: faq-default
-#  secretName: faq-db-postgresql
-  secretKey: postgresql-password</code></pre>
+  server: leader-postgresql
+  postgresqlUsername: faq-default
+  secretName: leader-postgresql
+  secretKey: password</code></pre>
 </div>
 </div>
 </div>
