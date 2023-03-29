@@ -157,7 +157,7 @@ Make sure we get the latest list of charts by running a periodical update of the
 <h2 id="_install_a_helm_chart"><a class="anchor" href="#_install_a_helm_chart"></a>Install a Helm Chart</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Firstly, create a new Kubernetes namespace or project:</p>
+<p>Create a new Kubernetes namespace or project. Alternatively, you can use an existing one:</p>
 </div>
 <div class="tabset is-loading">
 <div class="ulist tabs">
@@ -191,7 +191,7 @@ kubectl config set-context --current --namespace=dev</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>Setup the database instance with Helm, using the following command:</p>
+<p>Deploy a database instance in your namespace with Helm, using the following command:</p>
 </div>
 <div class="tabset is-loading">
 <div class="ulist tabs">
@@ -296,6 +296,14 @@ primary:
 
 COMPUTED VALUES:
 .....</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>You can use the following label selector to find resources managed by Helm in a given namespace:</p>
+</div>
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">kubectl get all -l='app.kubernetes.io/managed-by=Helm'</code></pre>
 </div>
 </div>
 <div class="admonitionblock important">
