@@ -121,7 +121,7 @@ Modify the name of the values file with the image values with:
 [source, yaml,subs="attributes+,+macros"]
 ----
 image:
-  repository: quay.io/anasandbox/faq
+  repository: quay.io/evanshortiss/helm-faq
   tag: "1.0.1"
   pullPolicy: IfNotPresent
   containerPort: 8080
@@ -198,12 +198,12 @@ kubectl get svc/simple-faq <3>
 <3> Get the URL to access your application.
 
 When the application is deployed, you can access the service at `/ask` endpoint to get a question.
-The IP and port will depend on the platform you are using as Kubernetes cluster.
 
 [.console-input]
 [source, bash, subs="attributes+,+macros"]
 ----
-curl http://35.237.137.84:8080/ask
+export POD_NAME=$(oc get pods -l app.kubernetes.io/instance=simple -o jsonpath={.items[0]..metadata.name})
+kubectl exec $POD_NAME -- /bin/curl -s localhost:8080/ask/
 ----
 
 [.console-output]
