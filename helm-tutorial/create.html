@@ -211,15 +211,15 @@ A template directive is enclosed in <code>{{ and }}</code> blocks.
 </table>
 </div>
 <div class="paragraph">
-<p>Modify the Docker image section by adding a parametrizable container port:</p>
+<p>Modify the image section by adding a parametrizable container port:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-imagePullPolicy: {{ .Values.image.pullPolicy }}
-ports:
-  - name: http
-    containerPort: {{ .Values.image.containerPort }}</code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.image.containerPort }}</code></pre>
 </div>
 </div>
 <div class="paragraph">
@@ -227,16 +227,16 @@ ports:
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">env:
-  - name: POSTGRES_SERVER
-    value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }} <i class="conum" data-value="1"></i><b>(1)</b>
-  - name: POSTGRES_USERNAME
-    value: {{ .Values.postgresql.postgresqlUsername | default (printf "postgres" ) | quote }}
-  - name: POSTGRES_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
-        key: {{ .Values.postgresql.secretKey }} <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">          env:
+            - name: POSTGRES_SERVER
+              value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }} <i class="conum" data-value="1"></i><b>(1)</b>
+            - name: POSTGRES_USERNAME
+              value: {{ .Values.postgresql.postgresqlUsername | default (printf "postgres" ) | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
+                  key: {{ .Values.postgresql.secretKey }} <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
 </div>
 </div>
 <div class="colist arabic">
@@ -258,22 +258,22 @@ Change the health and readiness using the following:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">readinessProbe:
-  httpGet:
-    path: {{ .Values.readinessProbe.path}}
-    port: {{ .Values.service.port }}
-  initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds}}
-  timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds}}
-  periodSeconds: {{ .Values.readinessProbe.periodSeconds}}
-  failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
-livenessProbe:
-  httpGet:
-    path: {{ .Values.livenessProbe.path}}
-    port: {{ .Values.service.port }}
-  initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds}}
-  timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds}}
-  periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
-  failureThreshold: {{ .Values.livenessProbe.failureThreshold}}</code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">          readinessProbe:
+            httpGet:
+              path: {{ .Values.readinessProbe.path}}
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds}}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds}}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds}}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          livenessProbe:
+            httpGet:
+              path: {{ .Values.livenessProbe.path}}
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds}}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds}}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold}}</code></pre>
 </div>
 </div>
 </div>
@@ -285,7 +285,7 @@ livenessProbe:
 <p>Your <code>values.yaml</code> is the place where you can specify values for different parameters used across templates.</p>
 </div>
 <div class="paragraph">
-<p>Modify the name of the values file with the image values with:</p>
+<p>Modify the values.yaml file with the following image values:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -297,7 +297,8 @@ livenessProbe:
 </div>
 </div>
 <div class="paragraph">
-<p>Using the details from previous section when you installed the database, you can parameterize the connection to the database:</p>
+<p>Using the details from the previous section when you installed the database, you can parameterize the connection to the database.
+Add the following postgresql section to the values.yaml file:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -309,7 +310,7 @@ livenessProbe:
 </div>
 </div>
 <div class="paragraph">
-<p>Every well-designed application needs health checks and this why you should add the following:</p>
+<p>Add health check values for the readiness and liveness probes:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -334,7 +335,7 @@ livenessProbe:
 A Kubernetes Service of type <code>LoadBalancer</code> will be used for this installation.</p>
 </div>
 <div class="paragraph">
-<p>Please change the service values that will expose your microservice:</p>
+<p>Replace the service values that will expose your microservice with the following:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
