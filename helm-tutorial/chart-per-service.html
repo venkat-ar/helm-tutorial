@@ -131,13 +131,13 @@ Be careful, this technique might bring:</p>
 <h2 id="_inject_configurations_from_a_configmap_template"><a class="anchor" href="#_inject_configurations_from_a_configmap_template"></a>Inject configurations from a configmap template</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>When working with a microservice is likely that you will inject and manage configurations using other Kubernetes resources, like
+<p>When working with a microservice it is likely that you will inject and manage configurations using other Kubernetes resources, like
 ConfigMap or Secret.</p>
 </div>
 <div class="paragraph">
 <p>Let&#8217;s inject a configuration from a ConfigMap for the tutorial microservice.
-Will start by navigating to <code>templates</code> folder and create <code>configmap.yaml</code>.
-Open <code>configmap.yaml</code> and replace it with the following:</p>
+Navigate to the <code>templates</code> folder and create a <code>configmap.yaml</code>.
+Open the <code>configmap.yaml</code> you just created and add the following:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -155,7 +155,7 @@ data:
 <table>
 <tr>
 <td><i class="conum" data-value="1"></i><b>1</b></td>
-<td>Put to upper case the value for region.</td>
+<td>Change the value for region to uppercase.</td>
 </tr>
 </table>
 </div>
@@ -174,34 +174,34 @@ data:
 </div>
 <div class="listingblock console-input">
 <div class="content">
-<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">env:
-  - name: POSTGRES_SERVER
-    value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
-  - name: POSTGRES_USERNAME
-    value: {{ .Values.postgresql.postgresqlUsername | quote }}
-  - name: POSTGRES_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
-        key: {{ .Values.postgresql.secretKey }}
-  - name: REGION
-    valueFrom:
-      configMapKeyRef:
-        name: {{ .Values.configmap.region }}
-        key: {{ .Values.configmap.key }}</code></pre>
+<pre class="highlightjs highlight"><code class="language-yaml hljs" data-lang="yaml">          env:
+            - name: POSTGRES_SERVER
+              value: {{ .Values.postgresql.server | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
+            - name: POSTGRES_USERNAME
+              value: {{ .Values.postgresql.postgresqlUsername | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.postgresql.secretName | default (printf "%s-postgresql" ( .Release.Name )) | quote }}
+                  key: {{ .Values.postgresql.secretKey }}
+            - name: REGION
+              valueFrom:
+                configMapKeyRef:
+                  name: {{ .Values.configmap.region }}
+                  key: {{ .Values.configmap.key }}</code></pre>
 </div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_automatically_roll_deployments_when_a_configmapsecret_changes"><a class="anchor" href="#_automatically_roll_deployments_when_a_configmapsecret_changes"></a>Automatically Roll Deployments when a ConfigMap/Secret changes</h2>
+<h2 id="_automatically_roll_out_deployments_when_a_configmapsecret_changes"><a class="anchor" href="#_automatically_roll_out_deployments_when_a_configmapsecret_changes"></a>Automatically roll out Deployments when a ConfigMap/Secret changes</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Very often, ConfigMaps or Secrets are injected as configuration files in containers and their content gets updated as well.
-But if the deployment spec itself didn&#8217;t change the application keeps running with the old configuration resulting in an inconsistent deployment.</p>
+<p>Configmaps and Secrets are often used as configuration files, but when values change in these files they are not automatically picked up by a running application unless the deployment spec itself changes.
+This can potentially result in inconsistent deployments where the values have been updated but the application is actually still running with the old configuration wich is not what we want.</p>
 </div>
 <div class="paragraph">
-<p>The <code>sha256sum</code> function can be used to ensure a deployment&#8217;s annotation section is updated if another file changes:</p>
+<p>A solution to this problem is to use a <code>sha256sum</code> function which can be used to ensure a deployment&#8217;s annotation section is updated if another file changes:</p>
 </div>
 <div class="admonitionblock important">
 <table>
@@ -239,10 +239,10 @@ spec:
 </div>
 </div>
 <div class="paragraph">
-<p>The above states the following: <strong>only</strong> if <code>.Values.podAnnotations</code> is defined, get the yaml definition from there.</p>
+<p>The above states the following: <strong>only</strong> if <code>.Values.podAnnotations</code> is defined, then get the yaml definition from there.</p>
 </div>
 <div class="paragraph">
-<p>So our change should occur in <code>values.yaml</code>:</p>
+<p>We can thus modify the <code>values.yaml</code> accordingly:</p>
 </div>
 <div class="admonitionblock note">
 <table>
@@ -282,7 +282,7 @@ and use the template (<code>tpl</code>) in <code>deployment.yaml</code> with:</p
 <h2 id="_upgrade_the_release"><a class="anchor" href="#_upgrade_the_release"></a>Upgrade the release</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Update existing release with the newly added configurations:</p>
+<p>Update the existing release with the newly added configurations:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
@@ -355,7 +355,7 @@ kubectl config set-context --current --namespace=qa</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>And define a set of values for this namespace by copy pasting  <code>values.yaml</code> into <code>values.qa.yaml</code>.
+<p>And define a set of values for this namespace by making a copy of <code>values.yaml</code>. Name the copy <code>values.qa.yaml</code>.
 Modify the region inside <code>values.qa.yaml</code>:</p>
 </div>
 <div class="listingblock console-input">
@@ -368,6 +368,19 @@ Modify the region inside <code>values.qa.yaml</code>:</p>
 <div class="paragraph">
 <p>And now install the charts:</p>
 </div>
+<div class="tabset is-loading">
+<div class="ulist tabs">
+<ul>
+<li>
+<p><a id="tabset2_minikube"></a>Minikube</p>
+</li>
+<li>
+<p><a id="tabset2_openshift"></a>OpenShift</p>
+</li>
+</ul>
+</div>
+<div class="content">
+<div class="tab-pane" aria-labelledby="tabset2_minikube">
 <div class="listingblock console-input">
 <div class="content">
 <pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db \
@@ -375,6 +388,19 @@ Modify the region inside <code>values.qa.yaml</code>:</p>
 bitnami/postgresql <i class="conum" data-value="1"></i><b>(1)</b>
 
 helm install simple ./chart/faq --values ./chart/faq/values.qa.yaml <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+</div>
+<div class="tab-pane" aria-labelledby="tabset2_openshift">
+<div class="listingblock console-input">
+<div class="content">
+<pre class="highlightjs highlight"><code class="language-bash hljs" data-lang="bash">helm install faq-db --set postgresqlUsername=faq-default,postgresqlPassword=postgres,postgresqlDatabase=faq,persistence.enabled=false,securityContext.enabled=false,containerSecurityContext.enabled=false,primary.podSecurityContext.enabled=false,primary.containerSecurityContext.enabled=
+false --version 12.1.2 bitnami/postgresql <i class="conum" data-value="1"></i><b>(1)</b>
+
+helm install simple ./chart/faq --values ./chart/faq/values.qa.yaml <i class="conum" data-value="2"></i><b>(2)</b></code></pre>
+</div>
+</div>
+</div>
 </div>
 </div>
 <div class="colist arabic">
@@ -395,7 +421,7 @@ helm install simple ./chart/faq --values ./chart/faq/values.qa.yaml <i class="co
 <h2 id="_clean_up"><a class="anchor" href="#_clean_up"></a>Clean-Up</h2>
 <div class="sectionbody">
 <div class="paragraph">
-<p>Clean-Up the namespaceto have it prepared for the following section:</p>
+<p>Clean-Up the namespace to have it prepared for the following section:</p>
 </div>
 <div class="listingblock console-input">
 <div class="content">
